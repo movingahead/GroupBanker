@@ -5,9 +5,11 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 public class FinishTransactionActivity extends Activity implements View.OnClickListener { 
 	private GroupBankerApplication mApplication ;
@@ -45,6 +48,21 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 				
 		Log.v("TAG", "in onCreate of FinishTransactionActivity");
 		
+		setContentView(R.layout.finishtransaction);
+		
+		//getting the window display parameters
+		
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		try {
+		display.getSize(size);
+		} catch (java.lang.NoSuchMethodError ignore) { // Older device
+			size.x = display.getWidth();
+	        size.y = display.getHeight();
+		}
+		int width = size.x;
+		int height = size.y;
+		
 		mApplication = (GroupBankerApplication) getApplication();
 		
 		Intent intent = getIntent();
@@ -71,44 +89,15 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		
 		selectedIds = bundle.getStringArray("selectedIds");
 		
-		ScrollView scrollView = new ScrollView(this);
-		RelativeLayout relativeLayout = new RelativeLayout(this) ;
-		scrollView.addView(relativeLayout);
+		ScrollView scrollView = (ScrollView)findViewById(R.id.OverAllScrollView);
+		RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.innerRelativeLayout);
+				
+		mDescription = (TextView)findViewById(R.id.description);
+		mAmount = (TextView)findViewById(R.id.amount);
 		
-		mDescription = new TextView(this);
+		mDescription.setText("Transaction Description:" + description);
+		mAmount.setText("Amount: Rs. " + amount);
 		
-		mAmount = new TextView(this);
-		
-		mDescription.setText(description);
-		mDescription.setId(mID);	// Set a random id for alignment 
-		
-		mAmount.setText("Amount = Rs. " + amount);
-		mAmount.setId(getId());
-		
-		final RelativeLayout.LayoutParams paramsDescription = 
-			new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		paramsDescription.addRule(RelativeLayout.ALIGN_LEFT);
-		
-		
-		final RelativeLayout.LayoutParams paramsAmount = 
-			new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		paramsAmount.addRule(RelativeLayout.ALIGN_LEFT);
-		paramsAmount.addRule(RelativeLayout.BELOW, mDescription.getId());
-		
-		
-		relativeLayout.addView(mDescription, paramsDescription);
-		relativeLayout.addView(mAmount, paramsAmount);
-		
-		
-		TextView formTitle = new TextView(this) ;
-		formTitle.setId(getId());
-		formTitle.setText(R.string.finish_question);
-		
-		final RelativeLayout.LayoutParams paramsFormTitle = 
-			new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		paramsFormTitle.addRule(RelativeLayout.BELOW, mAmount.getId());
-		
-		relativeLayout.addView(formTitle, paramsFormTitle);
 		
 		/* Set up a separate textview and edittext for the user 
 		 * We are getting username from GroupBankerApplication
@@ -119,19 +108,25 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		userName.setId(getId());
 		userName.setText(mApplication.getUserName());
 		Log.v(TAG, "username value:" + mApplication.getUserName()) ;
-		userName.setPadding(10, 30, 60, 0);
+		userName.setPadding(10, 10, 10, 30);
+		userName.setWidth(width/2);
+		userName.setTextSize(17);
 		
 		final RelativeLayout.LayoutParams paramsUserName = 
 			new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		paramsUserName.addRule(RelativeLayout.ALIGN_LEFT);
-		paramsUserName.addRule(RelativeLayout.BELOW, formTitle.getId());
+		paramsUserName.addRule(RelativeLayout.BELOW, mAmount.getId());
 		relativeLayout.addView(userName, paramsUserName);
 		
 		
 		userPaid = new EditText(this);
 		userPaid.setId(getId());
 		userPaid.setInputType(InputType.TYPE_CLASS_NUMBER); //takes only number input
+		userPaid.setPadding(10, 10, 10, 10);
+		userPaid.setWidth(width/2);
 		userPaid.setHint(R.string.paidHint);
+		
+		
 		
 		//TODO Will be good if we can control the width without hardcoding
 		
@@ -153,31 +148,33 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		for (i = 0; i <  selectedIds.length; i++)	{ 
 			rowTextView = new TextView(this) ;
 			rowTextView.setId(getId());
+			//rowTextView.setMaxWidth(70);
+			rowTextView.setPadding(10, 10, 10, 30);
+			rowTextView.setTextSize(17);
+			rowTextView.setWidth(width/2);
 			
 			rowEditText = new EditText(this) ;
 			rowEditText.setId(getId());
 			rowEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
 			rowEditText.setHint(R.string.paidHint);
+			rowEditText.setWidth(width/2);
+			rowEditText.setPadding(10, 10, 10, 10);
 			
 			
 			String name = mApplication.getFriendsDbAdapter().fetchFriendName(selectedIds[i]);
 			rowTextView.setText(name);
 			
-			//rowTextView.setMinimumWidth(50);
-			rowTextView.setPadding(10, 30, 60, 0);
-			
-		//	rowEditText.setMinWidth(200);
-			
+						
 			final RelativeLayout.LayoutParams paramsTextView = 
 				new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+				paramsTextView.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 			
 			final RelativeLayout.LayoutParams paramsEditText = 
 					new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 				paramsEditText.addRule(RelativeLayout.RIGHT_OF, rowTextView.getId());
 				paramsEditText.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 				paramsEditText.addRule(RelativeLayout.ALIGN_TOP, rowTextView.getId());
-				paramsEditText.setMargins(2, 20, 2, 20);
-				
+								
 			
 			// The first TextView will be below userName TextView. Rest below names[i-1]
 			if ( i == 0)	{
@@ -197,20 +194,12 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 			paid[i] = rowEditText ;
 		}
 		
-		Button btn = new Button(this);
-		btn.setText(R.string.finishTransaction);
-		btn.setId(getId());
+		Button btn = (Button)findViewById(R.id.finishTransaction);
 		btn.setOnClickListener(this);
-		final RelativeLayout.LayoutParams paramsButton = 
-				new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		paramsButton.addRule(RelativeLayout.BELOW, names[selectedIds.length-1].getId());
-		paramsButton.addRule(RelativeLayout.BELOW, paid[selectedIds.length-1].getId());
 		
-		relativeLayout.addView(btn, paramsButton);
 		mrelativeLayout = relativeLayout;
 		
-		this.setContentView(scrollView) ;		
-		
+			
 	}
 	
 	public int getId()	{
@@ -256,8 +245,7 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		for(i=0; i<selectedIds.length; i++){
 					
 					floatVal = Float.valueOf(paid[i].getText().toString());
-					sum += floatVal
-					;
+					sum += floatVal;
 				}
 				
 		if (sum != amount1)
@@ -273,8 +261,10 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		String[] userId = new String[selectedIds.length+1];
 		float[] diff = new float[selectedIds.length+1];
 		long[] finalIds;
-		Date d = new Date();
-		String formatted = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(d);
+		Long timestamp = System.currentTimeMillis();
+		String formatted = timestamp.toString();
+		//Date d = new Date();
+		//String formatted = new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(d);
 		Log.v(TAG, "values going in the transaction table are:" + amount1 + "description" + description);
 		
 		//entering details in transaction database
@@ -293,7 +283,7 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		detailsHelper.createDetails(lastId, "0", toPay, paid1);
 		
 		difference = paid1 - toPay;
-		userId[0] = "0";
+		userId[0] = "0"; 
 		diff[0] = difference;
 		
 		//entering the details for rest of the people involved in transaction
@@ -339,7 +329,7 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 		Log.v(TAG, "the difference array: " );
 		for(i=0; i<= selectedIds.length; i++)	{
 					
-			Log.v(TAG, diff[i] + ",");
+			Log.v(TAG, diff	[i] + ",");
 		}
 		
 		 //sending the sorted array to update the overview table
@@ -385,6 +375,7 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 				if(diff[j] > diff[maxIndex])	{
 					maxIndex = j;					
 				}
+			}
 				
 				if(maxIndex != i)	{
 					temp1 = diff[i];
@@ -397,7 +388,6 @@ public class FinishTransactionActivity extends Activity implements View.OnClickL
 				}
 			}
 		}
-	}
 	
 	//function definition for updateOverview
 	public void updateOverview(String userId[], float diff[], int transID)	{
